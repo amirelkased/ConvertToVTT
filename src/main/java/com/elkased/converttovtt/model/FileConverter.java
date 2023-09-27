@@ -1,12 +1,8 @@
 package com.elkased.converttovtt.model;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.io.*;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Stream;
+import java.nio.file.Paths;
 
 public class FileConverter {
 
@@ -14,43 +10,66 @@ public class FileConverter {
     }
 
     public static String doConvert(String src) {
-        try {
-            String newFilename;
+        String srcAddress;
 
-            if (src.charAt(src.length() - 1) == File.separatorChar) {
-                src = src.substring(0, src.length() - 1);
+        if (src.charAt(src.length() - 1) == File.separatorChar) {
+            src = src.substring(0, src.length() - 1);
+        }
+
+        int lastIndex = src.lastIndexOf(File.separatorChar);
+
+        String dest = src.substring(0, lastIndex);
+
+        srcAddress = src.substring(lastIndex + 1, src.length() - 3);
+
+        // Output File Full Path
+        StringBuilder destAddress = new StringBuilder(dest).append(File.separatorChar).append(srcAddress).append("vtt");
+        try {
+            Path inputPath = Paths.get(src);
+            Path outputPath = Paths.get(destAddress.toString());
+
+            BufferedReader br = new BufferedReader(new FileReader(String.valueOf(inputPath)));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(String.valueOf(outputPath)));
+
+            bw.write("WEBVTT");
+            bw.newLine();
+            bw.newLine(); // Add a blank line after "WEBVTT"
+
+            String line;
+            boolean subtitleStarted = false;
+
+            while ((line = br.readLine()) != null) {
+                if (line.isEmpty()) {
+                    subtitleStarted = false;
+                    bw.newLine(); // Add a blank line between subtitles
+                } else if (!subtitleStarted) {
+                    // Parse and format the SRT timestamp into VTT timestamp format
+                    String[] timestamps = line.split(" --> ");
+                    if (timestamps.length == 2) {
+                        String startTimestamp = timestamps[0].replace(",", ".");
+                        String endTimestamp = timestamps[1].replace(",", ".");
+                        bw.write(startTimestamp + " --> " + endTimestamp);
+                        bw.newLine();
+                        subtitleStarted = true;
+                    }
+                } else {
+                    // Write the subtitle text
+                    bw.write(line);
+                    bw.newLine();
+                }
             }
 
-            int lastIndex = src.lastIndexOf(File.separatorChar);
+            br.close();
+            bw.close();
 
-            String dest = src.substring(0, lastIndex);
-
-            newFilename = src.substring(lastIndex + 1, src.length() - 3);
-
-            Path pathOfSRTFile = Path.of(src);
-
-            // Fetch lines as a stream
-            Stream<String> lines = Files.lines(pathOfSRTFile);
-
-            List<String> updatedLines = lines.filter(line -> !line.matches("\\d+|.*<\\d{2}:\\d{2}:\\d{2}\\.\\d{3}>.*"))
-                    .toList();
-
-            StringBuilder builder = new StringBuilder(dest).append(File.separatorChar).append(newFilename).append("vtt");
-            FileWriter fileWriter = new FileWriter(builder.toString());
-
-            updatedLines.forEach(e -> {
-                try {
-                    fileWriter.write(e);
-                    fileWriter.write("\n");
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-
-            return builder.toString();
-
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            return destAddress.toString();
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("IO error: " + e.getMessage());
+            e.printStackTrace();
         }
+        return null;
     }
 }
