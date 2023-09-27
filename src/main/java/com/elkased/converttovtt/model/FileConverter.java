@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileConverter {
@@ -34,7 +33,7 @@ public class FileConverter {
             Stream<String> lines = Files.lines(pathOfSRTFile);
 
             List<String> updatedLines = lines.filter(line -> !line.matches("\\d+|.*<\\d{2}:\\d{2}:\\d{2}\\.\\d{3}>.*"))
-                    .collect(Collectors.toList());
+                    .toList();
 
             StringBuilder builder = new StringBuilder(dest).append(File.separatorChar).append(newFilename).append("vtt");
             FileWriter fileWriter = new FileWriter(builder.toString());

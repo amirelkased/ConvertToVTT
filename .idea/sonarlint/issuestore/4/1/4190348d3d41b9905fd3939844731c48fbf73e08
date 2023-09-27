@@ -1,0 +1,9 @@
+
+g	java:S112/"FDefine and throw a dedicated exception instead of using a generic one.(¼ÿ¾¹ÿÿÿÿÿ8ùµ€”«1
+g	java:S1126"FDefine and throw a dedicated exception instead of using a generic one.(¼ÿ¾¹ÿÿÿÿÿ8úµ€”«1
+`
+java:S2095""DUse try-with-resources or close this "Stream" in a "finally" clause.(Ú®ü'8«¶€”«1
+e
+java:S2095("HUse try-with-resources or close this "FileWriter" in a "finally" clause.(Í€Ôˆ8«¶€”«1
+o
+java:S6204%"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹8¼¶€”«1
